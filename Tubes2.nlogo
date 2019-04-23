@@ -6,6 +6,7 @@ globals [
 
 to setup
   clear-all
+  set goal-defined false
   set-default-shape turtles "l-shape"  ;;custom shape.. kecuali kalau mau pake patch
   setup-patches
   setup-Ls
@@ -38,8 +39,17 @@ end
 
 to set-goal
   if mouse-down? [
+    if goal-defined [
+      ask patch (round goal-x) (round goal-y) [
+        set pcolor black
+      ]
+    ]
     set goal-x round mouse-xcor
     set goal-y round mouse-ycor
+    set goal-defined true
+    ask patch (round goal-x) (round goal-y) [
+      set pcolor red
+    ]
   ]
 end
 
