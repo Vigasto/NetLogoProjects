@@ -12,6 +12,8 @@ turtles-own [
   came-from
   g-score
   f-score
+  is-path-found
+  is-path-formed
   path-found
 ]
 
@@ -33,12 +35,13 @@ to setup-Ls
   ;;masih bingung ini mau pake patch, single turtle atau grouped turtle buat collision
   ;;ini masih single turtle, bau-baunya sih grouped turtle
   create-turtles 1 [
-    setxy random-xcor random-ycor
+    setxy (round random-xcor) (round random-ycor)
     set heading 90 * random 4
   ]
   ask turtles [
     set color color + 2.5
-    set path-found false
+    set is-path-found false
+    set is-path-formed false
     set open-set []
     set open-set add-point open-set (list (round xcor) (round ycor))
     set closed-set []
@@ -52,7 +55,7 @@ to setup-Ls
       let g-temp []
       let f-temp []
       while [j < (max-pycor * 2) + 1] [
-        set c-temp lput (list (maxval + 1) (maxval + 1)) c-temp
+        set c-temp lput (list (maxval) (maxval)) c-temp
         set g-temp lput maxval g-temp
         set f-temp lput maxval f-temp
         set j (j + 1)
@@ -95,12 +98,12 @@ end
 to go
   ;;navigasi sama rotate
   ask turtles [
-    ifelse (not path-found and not empty? open-set) [
+    ifelse (not is-path-found and not empty? open-set) [
 
       set current lowest-fscore open-set f-score
 
       if ((get-x current) = goal-x and (get-y current) = goal-y)
-        [ set path-found true]
+        [ set is-path-found true]
 
       set open-set remove-point open-set current
       set closed-set add-point closed-set current
@@ -111,40 +114,55 @@ to go
       let i 0
       while [i < length neighbour-list] [
         let neighbour (item i neighbour-list)
-        if (is-valid neighbour and not contain-point closed-set neighbour) [
+        if (is-valid neighbour and (not contain-point closed-set neighbour)) [
+
           let temp-g-score ((get-map g-score current) + (distance-from-to (get-x current) (get-y current) (get-x neighbour) (get-y neighbour)))
-          if (not contain-point open-set neighbour) [
+
+          ifelse (not contain-point open-set neighbour) [
             set open-set add-point open-set neighbour
-          ]
-          if (temp-g-score < get-map g-score neighbour) [
             set came-from update-map came-from (get-x neighbour) (get-y neighbour) current
             set g-score update-map g-score (get-x neighbour) (get-y neighbour) temp-g-score
             set f-score update-map f-score (get-x neighbour) (get-y neighbour) (temp-g-score + (distance-from-to (get-x neighbour) (get-y neighbour) goal-x goal-y))
+          ][
+            if (temp-g-score < get-map g-score neighbour) [
+              set came-from update-map came-from (get-x neighbour) (get-y neighbour) current
+              set g-score update-map g-score (get-x neighbour) (get-y neighbour) temp-g-score
+              set f-score update-map f-score (get-x neighbour) (get-y neighbour) (temp-g-score + (distance-from-to (get-x neighbour) (get-y neighbour) goal-x goal-y))
+            ]
           ]
         ]
         set i (i + 1)
       ]
     ]
     [
-      let initialx xcor
-      let initialy ycor
-      write "hello"
-      show current
-      pd
-      while [(get-x current) != initialx and (get-y current) != initialy] [
+      if not is-path-formed [
+        let initialx round xcor
+        let initialy round ycor
         set xcor (get-x current)
         set ycor (get-y current)
-        set current (get-map came-from current)
+        write "hello"
+        show is-path-found
+        pd
+        while [(get-x current) != initialx and (get-y current) != initialy] [
+          show current
+          set current (get-map came-from current)
+          set xcor (get-x current)
+          set ycor (get-y current)
+        ]
+        write "done"
+        set is-path-formed true
+        pu
+        stop
       ]
-      pu
-      stop
     ]
   ]
   tick
 end
 
 to-report is-valid [point]
-  report ((abs (get-x point) <= max-pxcor) and (abs (get-y point) <= max-pycor))
+  let x get-x point
+  let y get-y point
+  report ((abs x <= max-pxcor) and (abs y <= max-pycor) and ([pcolor] of patch x y != white))
 end
 
 to-report get-x [point] report (item 0 point) end
@@ -230,10 +248,10 @@ to-report lowest-fscore [point-list fscore-list]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
-10
-491
-292
+216
+18
+497
+300
 -1
 -1
 13.0
@@ -308,10 +326,10 @@ NIL
 1
 
 BUTTON
-12
-233
-75
-266
+132
+276
+195
+309
 Go
 go
 T
@@ -351,6 +369,28 @@ OUTPUT
 348
 739
 530
+11
+
+MONITOR
+10
+206
+108
+251
+NIL
+[xcor] of turtle 0
+17
+1
+11
+
+MONITOR
+113
+206
+218
+251
+NIL
+[ycor] of turtle 0
+17
+1
 11
 
 @#$#@#$#@
