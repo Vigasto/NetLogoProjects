@@ -2,10 +2,22 @@ globals [
   goal-x                               ;;patch coordinate to goal
   goal-y                               ;;patch coordinate to goal
   goal-defined                         ;;initially false, becomes true if goal is set
+  maxval
+]
+
+turtles-own [
+  current
+  open-set
+  closed-set
+  came-from
+  g-score
+  f-score
+  path-found
 ]
 
 to setup
   clear-all
+  set maxval ifelse-value (max-pycor > max-pxcor) [ max-pycor * 3] [ max-pxcor * 3]
   set goal-defined false
   set-default-shape turtles "l-shape"  ;;custom shape.. kecuali kalau mau pake patch
   setup-patches
@@ -20,12 +32,39 @@ end
 to setup-Ls
   ;;masih bingung ini mau pake patch, single turtle atau grouped turtle buat collision
   ;;ini masih single turtle, bau-baunya sih grouped turtle
-  create-turtles 3 [
+  create-turtles 1 [
     setxy random-xcor random-ycor
     set heading 90 * random 4
   ]
   ask turtles [
     set color color + 2.5
+    set path-found false
+    set open-set []
+    set open-set add-point open-set (list (round xcor) (round ycor))
+    set closed-set []
+    set came-from []
+    set g-score []
+    set f-score []
+    let i 0
+    let j 0
+    while [i < (max-pxcor * 2) + 1] [
+      let c-temp []
+      let g-temp []
+      let f-temp []
+      while [j < (max-pycor * 2) + 1] [
+        set c-temp lput (list (maxval + 1) (maxval + 1)) c-temp
+        set g-temp lput maxval g-temp
+        set f-temp lput maxval f-temp
+        set j (j + 1)
+      ]
+      set came-from lput c-temp came-from
+      set g-score lput g-temp g-score
+      set f-score lput f-temp f-score
+      set j 0
+      set i (i + 1)
+    ]
+    set g-score update-map g-score (round xcor) (round ycor) 0
+    set f-score update-map f-score (round xcor) (round ycor) (distance-from-to xcor ycor goal-x goal-y)
   ]
 end
 
@@ -55,7 +94,139 @@ end
 
 to go
   ;;navigasi sama rotate
+  ask turtles [
+    ifelse (not path-found and not empty? open-set) [
+
+      set current lowest-fscore open-set f-score
+
+      if ((get-x current) = goal-x and (get-y current) = goal-y)
+        [ set path-found true]
+
+      set open-set remove-point open-set current
+      set closed-set add-point closed-set current
+
+
+      let neighbour-list (get-neighbour current)
+
+      let i 0
+      while [i < length neighbour-list] [
+        let neighbour (item i neighbour-list)
+        if (is-valid neighbour and not contain-point closed-set neighbour) [
+          let temp-g-score ((get-map g-score current) + (distance-from-to (get-x current) (get-y current) (get-x neighbour) (get-y neighbour)))
+          if (not contain-point open-set neighbour) [
+            set open-set add-point open-set neighbour
+          ]
+          if (temp-g-score < get-map g-score neighbour) [
+            set came-from update-map came-from (get-x neighbour) (get-y neighbour) current
+            set g-score update-map g-score (get-x neighbour) (get-y neighbour) temp-g-score
+            set f-score update-map f-score (get-x neighbour) (get-y neighbour) (temp-g-score + (distance-from-to (get-x neighbour) (get-y neighbour) goal-x goal-y))
+          ]
+        ]
+        set i (i + 1)
+      ]
+    ]
+    [
+      let initialx xcor
+      let initialy ycor
+      write "hello"
+      show current
+      pd
+      while [(get-x current) != initialx and (get-y current) != initialy] [
+        set xcor (get-x current)
+        set ycor (get-y current)
+        set current (get-map came-from current)
+      ]
+      pu
+      stop
+    ]
+  ]
   tick
+end
+
+to-report is-valid [point]
+  report ((abs (get-x point) <= max-pxcor) and (abs (get-y point) <= max-pycor))
+end
+
+to-report get-x [point] report (item 0 point) end
+to-report get-y [point] report (item 1 point) end
+
+to-report add-point [point-list point]
+  let x get-x point
+  let y get-y point
+  report lput (list x y) point-list
+end
+
+to-report remove-point [point-list point]
+  let x get-x point
+  let y get-y point
+  let i 0
+  let found false
+  while [i < length point-list and not found] [
+    ifelse ((get-x (item i point-list)) = x and (get-y (item i point-list)) = y)
+      [ set found true ]
+    [ set i (i + 1) ]
+  ]
+  report remove-item i point-list
+end
+
+to-report contain-point [point-list point]
+  let x get-x point
+  let y get-y point
+  let i 0
+  let found false
+  while [i < length point-list and not found] [
+    ifelse ((get-x (item i point-list)) = x and (get-y (item i point-list)) = y)
+      [ set found true ]
+    [ set i (i + 1) ]
+  ]
+  report found
+end
+
+to-report get-neighbour [point]
+  report (list
+    (list ((get-x point) - 1) ((get-y point) - 1))
+    (list ((get-x point) - 1) ((get-y point)))
+    (list ((get-x point) - 1) ((get-y point) + 1))
+    (list ((get-x point)) ((get-y point) - 1))
+    (list ((get-x point)) ((get-y point) + 1))
+    (list ((get-x point) + 1) ((get-y point) - 1))
+    (list ((get-x point) + 1) ((get-y point)))
+    (list ((get-x point) + 1) ((get-y point) + 1))
+    )
+end
+
+to-report update-map [multilist xpos ypos value]
+  let x (xpos + max-pxcor)
+  let y (ypos + max-pycor)
+  let xtemp (item x multilist)
+  let new-xtemp (replace-item y xtemp value)
+  report (replace-item x multilist new-xtemp)
+end
+
+to-report get-map [multilist point]
+  let x ((get-x point) + max-pxcor)
+  let y ((get-y point) + max-pycor)
+  let xtemp (item x multilist)
+  report (item y xtemp)
+end
+
+to-report distance-from-to [x1 y1 x2 y2]
+  report sqrt ((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
+end
+
+to-report lowest-fscore [point-list fscore-list]
+  let lowest maxval
+  let lowest-i 0
+  let i 0
+  while [i < length point-list] [
+    let temp (get-map fscore-list (item i point-list))
+    if (lowest > temp) [
+      set lowest temp
+      set lowest-i i
+    ]
+    set i (i + 1)
+  ]
+  report item lowest-i point-list
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -122,7 +293,7 @@ NIL
 BUTTON
 10
 98
-103
+136
 131
 Set Goal
 set-goal
@@ -137,10 +308,10 @@ NIL
 1
 
 BUTTON
-13
-177
-76
-210
+12
+233
+75
+266
 Go
 go
 T
@@ -152,6 +323,35 @@ NIL
 NIL
 NIL
 1
+
+MONITOR
+11
+154
+68
+199
+NIL
+goal-x
+17
+1
+11
+
+MONITOR
+77
+154
+134
+199
+NIL
+goal-y
+17
+1
+11
+
+OUTPUT
+121
+348
+739
+530
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
