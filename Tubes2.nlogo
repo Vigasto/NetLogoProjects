@@ -21,7 +21,7 @@ to setup
   clear-all
   set maxval ifelse-value (max-pycor > max-pxcor) [ max-pycor * 3] [ max-pxcor * 3]
   set goal-defined false
-  set-default-shape turtles "l-shape"  ;;custom shape.. kecuali kalau mau pake patch
+  set-default-shape turtles "full-square-with-center"
   setup-patches
   setup-Ls
   reset-ticks
@@ -34,7 +34,7 @@ end
 to setup-Ls
   ;;masih bingung ini mau pake patch, single turtle atau grouped turtle buat collision
   ;;ini masih single turtle, bau-baunya sih grouped turtle
-  create-turtles 1 [
+  create-turtles 3 [
     setxy (round random-xcor) (round random-ycor)
     set heading 90 * random 4
   ]
@@ -68,7 +68,50 @@ to setup-Ls
     ]
     set g-score update-map g-score (round xcor) (round ycor) 0
     set f-score update-map f-score (round xcor) (round ycor) (distance-from-to xcor ycor goal-x goal-y)
+    draw-L xcor ycor heading color
   ]
+end
+
+to draw-L [x y head col]
+  ask neighbors
+  [
+    ifelse (col = white or col = red)
+    []
+    [set pcolor black]
+  ]
+  if head = 0 [                 ;;starts with L
+    ask patches with [
+      (pxcor = x and abs (pycor - y) <= 1) or
+      (pxcor = x + 1 and pycor = y - 1)
+    ] [
+      set pcolor col
+    ]
+  ]
+  if head = 90 [
+    ask patches with [
+      (pycor = y and abs (pxcor - x) <= 1) or
+      (pxcor = x - 1 and pycor = y - 1)
+    ] [
+      set pcolor col
+    ]
+  ]
+  if head = 180 [
+    ask patches with [
+      (pxcor = x and abs (pycor - y) <= 1) or
+      (pxcor = x - 1 and pycor = y + 1)
+    ] [
+      set pcolor col
+    ]
+  ]
+  if head = 270 [
+    ask patches with [
+      (pycor = y and abs (pxcor - x) <= 1) or
+      (pxcor = x + 1 and pycor = y + 1)
+    ] [
+      set pcolor col
+    ]
+  ]
+
 end
 
 to set-obstacle
@@ -571,6 +614,17 @@ Circle -7500403 true true 96 51 108
 Circle -16777216 true false 113 68 74
 Polygon -10899396 true false 189 233 219 188 249 173 279 188 234 218
 Polygon -10899396 true false 180 255 150 210 105 210 75 240 135 240
+
+full-square
+true
+8
+Rectangle -11221820 true true 0 0 300 300
+
+full-square-with-center
+true
+0
+Rectangle -7500403 true true 0 0 300 300
+Circle -16777216 true false 129 129 42
 
 house
 false
