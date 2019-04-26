@@ -49,7 +49,7 @@ end
 
 to setup-Ls
   ;;no collisions yet
-  create-turtles 1 [
+  create-turtles 3 [
     ;;make it strictly inside the boundary
     setxy (random (world-width - 6) - (max-pxcor - 3)) (random(world-height - 6) - (max-pycor - 3))
     set heading 90 * random 4
@@ -138,14 +138,20 @@ to navigate
       ask neighbors [
         if not (pcolor = white or pcolor = red) [set pcolor black]
         if not assessed? [assess-patchs]
+        ask neighbors [
+          ;if not (pcolor = white or pcolor = red) [set pcolor black]
+          if not assessed? [assess-patchs]
+        ]
       ]
       let passable-neighbors pass-check
       let paths-not-towards-corner corner-check passable-neighbors
       let least-visited-neighbors least-visited paths-not-towards-corner
+      pd
       move-to minimum-path least-visited-neighbors
       draw-L xcor ycor heading color
       set visited? true
       set visit-count visit-count + 1
+      pu
     ]
     set goal-dist distance-from-to xcor ycor goal-x goal-y
   ]
@@ -190,27 +196,67 @@ to-report pass-check
   let paths []
   let col (heading / 90)
   ;from left
-  if is-valid-path (xcor + 1) (ycor)[
-    if (matrix:get ([pass-matrix] of patch (xcor + 1) (ycor)) 0 col = 1)[
-      set paths lput ( patch (xcor + 1) (ycor)) paths
+  ifelse (heading = 2) [
+    if is-valid-path (xcor + 1) (ycor)[
+      if (matrix:get ([pass-matrix] of patch (xcor + 1) (ycor)) 0 col = 1)[
+        set paths lput ( patch (xcor + 1) (ycor)) paths
+      ]
+    ]
+  ] [
+    if (is-valid-path (xcor + 1) (ycor) and is-valid-path (xcor + 2) (ycor))[
+      if (matrix:get ([pass-matrix] of patch (xcor + 1) (ycor)) 0 col = 1)[
+        if (matrix:get ([pass-matrix] of patch (xcor + 2) (ycor)) 0 col = 1)[
+          set paths lput ( patch (xcor + 1) (ycor)) paths
+        ]
+      ]
     ]
   ]
   ;from right
-  if is-valid-path (xcor - 1) (ycor)[
-    if (matrix:get ([pass-matrix] of patch (xcor - 1) (ycor)) 1 col = 1)[
-      set paths lput ( patch (xcor - 1) (ycor)) paths
+  ifelse (heading = 0) [
+    if is-valid-path (xcor - 1) (ycor)[
+      if (matrix:get ([pass-matrix] of patch (xcor - 1) (ycor)) 1 col = 1)[
+        set paths lput ( patch (xcor - 1) (ycor)) paths
+      ]
+    ]
+  ] [
+    if (is-valid-path (xcor - 1) (ycor) and is-valid-path (xcor - 2) (ycor))[
+      if (matrix:get ([pass-matrix] of patch (xcor - 1) (ycor)) 1 col = 1)[
+        if (matrix:get ([pass-matrix] of patch (xcor - 2) (ycor)) 1 col = 1)[
+          set paths lput ( patch (xcor - 1) (ycor)) paths
+        ]
+      ]
     ]
   ]
   ;from top
-  if is-valid-path (xcor) (ycor + 1)[
-    if (matrix:get ([pass-matrix] of patch (xcor) (ycor + 1)) 2 col = 1)[
-      set paths lput ( patch (xcor) (ycor + 1)) paths
+  ifelse (heading = 3) [
+    if is-valid-path (xcor) (ycor + 1)[
+      if (matrix:get ([pass-matrix] of patch (xcor) (ycor + 1)) 2 col = 1)[
+        set paths lput ( patch (xcor) (ycor + 1)) paths
+      ]
+    ]
+  ] [
+    if (is-valid-path (xcor) (ycor + 1) and is-valid-path (xcor) (ycor + 2))[
+      if (matrix:get ([pass-matrix] of patch (xcor) (ycor + 1)) 2 col = 1)[
+        if (matrix:get ([pass-matrix] of patch (xcor) (ycor + 2)) 2 col = 1)[
+          set paths lput ( patch (xcor) (ycor + 1)) paths
+        ]
+      ]
     ]
   ]
   ;from bottom
-  if is-valid-path (xcor) (ycor - 1)[
-    if (matrix:get ([pass-matrix] of patch (xcor) (ycor - 1)) 3 col = 1)[
-      set paths lput ( patch (xcor) (ycor - 1)) paths
+  ifelse (heading = 1) [
+    if is-valid-path (xcor) (ycor - 1)[
+      if (matrix:get ([pass-matrix] of patch (xcor) (ycor - 1)) 3 col = 1)[
+        set paths lput ( patch (xcor) (ycor - 1)) paths
+      ]
+    ]
+  ] [
+    if (is-valid-path (xcor) (ycor - 1) and is-valid-path (xcor) (ycor - 2))[
+      if (matrix:get ([pass-matrix] of patch (xcor) (ycor - 1)) 3 col = 1)[
+        if (matrix:get ([pass-matrix] of patch (xcor) (ycor - 2)) 3 col = 1)[
+          set paths lput ( patch (xcor) (ycor - 1)) paths
+        ]
+      ]
     ]
   ]
   show paths
@@ -235,7 +281,7 @@ to update-viz
   ask patches [
     ;;if (visited? and pcolor != white and pcolor != red) [set pcolor gray]
     ;;set plabel round absolute-goal-dist
-    set plabel visit-count
+    ;;set plabel visit-count
   ]
   ask turtles [
     draw-L xcor ycor heading color
@@ -253,8 +299,8 @@ end
 GRAPHICS-WINDOW
 216
 18
-1285
-1088
+1277
+1080
 -1
 -1
 13.0
