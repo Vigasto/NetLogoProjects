@@ -143,6 +143,7 @@ to navigate
           if not assessed? [assess-patchs]
         ]
       ]
+      rotate-check
       let passable-neighbors pass-check
       let paths-not-towards-corner corner-check passable-neighbors
       let least-visited-neighbors least-visited paths-not-towards-corner
@@ -192,6 +193,94 @@ to assess-patchs
   ]
 end
 
+to rotate-check
+  let new-heading heading
+  ifelse (heading = 0 or heading = 180) [
+    ;move to left
+    if (left-score < right-score) and (left-score < top-score) and (left-score < bottom-score) [
+      ;only rotate if necessary
+      if (matrix:get ([pass-matrix] of patch (xcor - 1) (ycor)) 1 1 + (matrix:get ([pass-matrix] of patch (xcor - 1) (ycor)) 1 3)) = 1 [
+        if (matrix:get ([pass-matrix] of patch (xcor - 1) (ycor)) 1 1) and (matrix:get ([pass-matrix] of patch (xcor - 2) (ycor)) 1 1) [
+          set new-heading 90
+        ]
+        if (matrix:get ([pass-matrix] of patch (xcor - 1) (ycor)) 1 3) and (matrix:get ([pass-matrix] of patch (xcor - 2) (ycor)) 1 3)[
+          set new-heading 270
+        ]
+      ]
+    ]
+    ;move to right
+    if (right-score < left-score) and (right-score < top-score) and (right-score < bottom-score) [
+      ;only rotate if necessary
+      if (matrix:get ([pass-matrix] of patch (xcor + 1) (ycor)) 0 1 + (matrix:get ([pass-matrix] of patch (xcor + 1) (ycor)) 0 3)) = 1[
+        if (matrix:get ([pass-matrix] of patch (xcor + 1) (ycor)) 0 1) and (matrix:get ([pass-matrix] of patch (xcor + 2) (ycor)) 0 1) [
+          set new-heading 90
+        ]
+        if (matrix:get ([pass-matrix] of patch (xcor + 1) (ycor)) 0 3) and (matrix:get ([pass-matrix] of patch (xcor + 2) (ycor)) 0 3)[
+          set new-heading 270
+        ]
+      ]
+    ]
+  ] [
+    ;move to top
+    if (top-score < right-score) and (top-score < left-score) and (top-score < bottom-score) [
+      ;only rotate if necessary
+      if (matrix:get ([pass-matrix] of patch (xcor) (ycor + 1)) 3 0 + (matrix:get ([pass-matrix] of patch (xcor - 1) (ycor)) 3 2)) = 1 [
+        if (matrix:get ([pass-matrix] of patch (xcor) (ycor + 1)) 3 0) and (matrix:get ([pass-matrix] of patch (xcor) (ycor + 2)) 3 0) [
+          set new-heading 0
+        ]
+        if (matrix:get ([pass-matrix] of patch (xcor) (ycor + 1)) 3 2) and (matrix:get ([pass-matrix] of patch (xcor) (ycor + 2)) 3 2)[
+          set new-heading 180
+        ]
+      ]
+    ]
+    ;move to bottom
+    if (bottom-score < left-score) and (bottom-score < right-score) and (bottom-score < top-score) [
+      ;only rotate if necessary
+      if (matrix:get ([pass-matrix] of patch (xcor + 1) (ycor)) 2 0 + (matrix:get ([pass-matrix] of patch (xcor + 1) (ycor)) 2 2)) = 1 [
+        if (matrix:get ([pass-matrix] of patch (xcor + 1) (ycor)) 2 0) and (matrix:get ([pass-matrix] of patch (xcor + 2) (ycor)) 2 0) [
+          set new-heading 0
+        ]
+        if (matrix:get ([pass-matrix] of patch (xcor + 1) (ycor)) 2 2) and (matrix:get ([pass-matrix] of patch (xcor + 2) (ycor)) 2 2)[
+          set new-heading 180
+        ]
+      ]
+    ]
+  ]
+  set heading new-heading
+end
+
+to-report left-score
+  ifelse is-valid-path (xcor - 1) (ycor) [
+    report (([absolute-goal-dist] of patch (xcor - 1) (ycor)) + ([visit-count] of patch (xcor - 1) (ycor)))
+  ] [
+    report world-width * world-height
+  ]
+end
+
+to-report right-score
+  ifelse is-valid-path (xcor - 1) (ycor) [
+    report (([absolute-goal-dist] of patch (xcor - 1) (ycor)) + ([visit-count] of patch (xcor + 1) (ycor)))
+  ] [
+    report world-width * world-height
+  ]
+end
+
+to-report top-score
+  ifelse is-valid-path (xcor - 1) (ycor) [
+    report (([absolute-goal-dist] of patch (xcor - 1) (ycor)) + ([visit-count] of patch (xcor) (ycor + 1)))
+  ] [
+    report world-width * world-height
+  ]
+end
+
+to-report bottom-score
+  ifelse is-valid-path (xcor - 1) (ycor) [
+    report (([absolute-goal-dist] of patch (xcor - 1) (ycor)) + ([visit-count] of patch (xcor) (ycor - 1)))
+  ] [
+    report world-width * world-height
+  ]
+end
+
 to-report pass-check
   let paths []
   let col (heading / 90)
@@ -227,7 +316,7 @@ to-report pass-check
       ]
     ]
   ]
-  ;from top
+  ;from bottom
   ifelse (heading = 3) [
     if is-valid-path (xcor) (ycor + 1)[
       if (matrix:get ([pass-matrix] of patch (xcor) (ycor + 1)) 2 col = 1)[
@@ -243,7 +332,7 @@ to-report pass-check
       ]
     ]
   ]
-  ;from bottom
+  ;from top
   ifelse (heading = 1) [
     if is-valid-path (xcor) (ycor - 1)[
       if (matrix:get ([pass-matrix] of patch (xcor) (ycor - 1)) 3 col = 1)[
@@ -317,8 +406,8 @@ GRAPHICS-WINDOW
 40
 -40
 40
-0
-0
+1
+1
 1
 ticks
 30.0
@@ -412,6 +501,26 @@ goal-y
 17
 1
 11
+
+PLOT
+12
+327
+212
+477
+dist_plot
+time
+distance
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"turtle0" 1.0 0 -16777216 true "ask turtle 0 [\n set-plot-pen-color color\n]" "ask turtle 0 [\n plot goal-dist\n]"
+"turtle1" 1.0 0 -7500403 true "ask turtle 1 [\n set-plot-pen-color color\n]" "ask turtle 1 [\n plot goal-dist\n]"
+"turtle2" 1.0 0 -2674135 true "ask turtle 2 [\n set-plot-pen-color color\n]" "ask turtle 2 [\n plot goal-dist\n]"
 
 @#$#@#$#@
 ## WHAT IS IT?
