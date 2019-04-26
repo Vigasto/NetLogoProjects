@@ -200,10 +200,10 @@ to rotate-check
     if (left-score < right-score) and (left-score < top-score) and (left-score < bottom-score) [
       ;only rotate if necessary
       if (matrix:get ([pass-matrix] of patch (xcor - 1) (ycor)) 1 1 + (matrix:get ([pass-matrix] of patch (xcor - 1) (ycor)) 1 3)) = 1 [
-        if (matrix:get ([pass-matrix] of patch (xcor - 1) (ycor)) 1 1) and (matrix:get ([pass-matrix] of patch (xcor - 2) (ycor)) 1 1) [
+        if (matrix:get ([pass-matrix] of patch (xcor - 1) (ycor)) 1 1) + (matrix:get ([pass-matrix] of patch (xcor - 2) (ycor)) 1 1) = 2[
           set new-heading 90
         ]
-        if (matrix:get ([pass-matrix] of patch (xcor - 1) (ycor)) 1 3) and (matrix:get ([pass-matrix] of patch (xcor - 2) (ycor)) 1 3)[
+        if (matrix:get ([pass-matrix] of patch (xcor - 1) (ycor)) 1 3) + (matrix:get ([pass-matrix] of patch (xcor - 2) (ycor)) 1 3) = 2[
           set new-heading 270
         ]
       ]
@@ -212,10 +212,10 @@ to rotate-check
     if (right-score < left-score) and (right-score < top-score) and (right-score < bottom-score) [
       ;only rotate if necessary
       if (matrix:get ([pass-matrix] of patch (xcor + 1) (ycor)) 0 1 + (matrix:get ([pass-matrix] of patch (xcor + 1) (ycor)) 0 3)) = 1[
-        if (matrix:get ([pass-matrix] of patch (xcor + 1) (ycor)) 0 1) and (matrix:get ([pass-matrix] of patch (xcor + 2) (ycor)) 0 1) [
+        if (matrix:get ([pass-matrix] of patch (xcor + 1) (ycor)) 0 1) + (matrix:get ([pass-matrix] of patch (xcor + 2) (ycor)) 0 1) = 2 [
           set new-heading 90
         ]
-        if (matrix:get ([pass-matrix] of patch (xcor + 1) (ycor)) 0 3) and (matrix:get ([pass-matrix] of patch (xcor + 2) (ycor)) 0 3)[
+        if (matrix:get ([pass-matrix] of patch (xcor + 1) (ycor)) 0 3) + (matrix:get ([pass-matrix] of patch (xcor + 2) (ycor)) 0 3) = 2[
           set new-heading 270
         ]
       ]
@@ -225,10 +225,10 @@ to rotate-check
     if (top-score < right-score) and (top-score < left-score) and (top-score < bottom-score) [
       ;only rotate if necessary
       if (matrix:get ([pass-matrix] of patch (xcor) (ycor + 1)) 3 0 + (matrix:get ([pass-matrix] of patch (xcor - 1) (ycor)) 3 2)) = 1 [
-        if (matrix:get ([pass-matrix] of patch (xcor) (ycor + 1)) 3 0) and (matrix:get ([pass-matrix] of patch (xcor) (ycor + 2)) 3 0) [
+        if (matrix:get ([pass-matrix] of patch (xcor) (ycor + 1)) 3 0) + (matrix:get ([pass-matrix] of patch (xcor) (ycor + 2)) 3 0) = 2 [
           set new-heading 0
         ]
-        if (matrix:get ([pass-matrix] of patch (xcor) (ycor + 1)) 3 2) and (matrix:get ([pass-matrix] of patch (xcor) (ycor + 2)) 3 2)[
+        if (matrix:get ([pass-matrix] of patch (xcor) (ycor + 1)) 3 2) + (matrix:get ([pass-matrix] of patch (xcor) (ycor + 2)) 3 2) = 2[
           set new-heading 180
         ]
       ]
@@ -237,10 +237,10 @@ to rotate-check
     if (bottom-score < left-score) and (bottom-score < right-score) and (bottom-score < top-score) [
       ;only rotate if necessary
       if (matrix:get ([pass-matrix] of patch (xcor + 1) (ycor)) 2 0 + (matrix:get ([pass-matrix] of patch (xcor + 1) (ycor)) 2 2)) = 1 [
-        if (matrix:get ([pass-matrix] of patch (xcor + 1) (ycor)) 2 0) and (matrix:get ([pass-matrix] of patch (xcor + 2) (ycor)) 2 0) [
+        if (matrix:get ([pass-matrix] of patch (xcor + 1) (ycor)) 2 0) + (matrix:get ([pass-matrix] of patch (xcor + 2) (ycor)) 2 0) = 2 [
           set new-heading 0
         ]
-        if (matrix:get ([pass-matrix] of patch (xcor + 1) (ycor)) 2 2) and (matrix:get ([pass-matrix] of patch (xcor + 2) (ycor)) 2 2)[
+        if (matrix:get ([pass-matrix] of patch (xcor + 1) (ycor)) 2 2) + (matrix:get ([pass-matrix] of patch (xcor + 2) (ycor)) 2 2) = 2[
           set new-heading 180
         ]
       ]
@@ -386,10 +386,10 @@ to-report is-valid-path [x y]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-216
-18
-1277
-1080
+231
+10
+1292
+1072
 -1
 -1
 13.0
@@ -406,8 +406,8 @@ GRAPHICS-WINDOW
 40
 -40
 40
-1
-1
+0
+0
 1
 ticks
 30.0
