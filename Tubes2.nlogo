@@ -14,7 +14,7 @@ turtles-own [
   f-score
   is-path-found
   is-path-formed
-  path-found
+  path-formed
 ]
 
 to setup
@@ -178,24 +178,38 @@ to go
       ]
     ]
     [
-      if not is-path-formed [
-        let initialx round xcor
-        let initialy round ycor
-        set xcor (get-x current)
-        set ycor (get-y current)
-        write "hello"
-        show is-path-found
-        pd
+      ifelse not is-path-formed [
+        let initialx xcor
+        let initialy ycor
+        set path-formed []
+        set path-formed fput (list (get-x current) (get-y current)) path-formed
+
+
         while [(get-x current) != initialx and (get-y current) != initialy] [
-          show current
           set current (get-map came-from current)
-          set xcor (get-x current)
-          set ycor (get-y current)
+          set path-formed fput (list (get-x current) (get-y current)) path-formed
         ]
-        write "done"
+
+        show path-formed
+        pen-down
+
+        let i 0
+        while [i < length path-formed] [
+          let path-point (item i path-formed)
+          set xcor (get-x path-point)
+          set ycor (get-y path-point)
+          set i (i + 1)
+        ]
+        write "hey"
+        show list xcor ycor
+        pen-up
+
+        set xcor initialx
+        set ycor initialy
+
         set is-path-formed true
-        pu
-        stop
+      ][
+
       ]
     ]
   ]
